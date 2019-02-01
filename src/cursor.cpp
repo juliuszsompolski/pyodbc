@@ -1250,6 +1250,41 @@ static PyObject* Cursor_fetchmany(PyObject* self, PyObject* args)
     return result;
 }
 
+static PyObject* Cursor_fetchcount(PyObject* self, PyObject* args)
+{
+    UNUSED(args);
+    long rows = 0;
+
+    Cursor* cur = Cursor_Validate(self, CURSOR_REQUIRE_RESULTS | CURSOR_RAISE_ERROR);
+    if (!cur)
+        return 0;
+
+    while (true) {
+        SQLRETURN ret = 0;
+        Py_BEGIN_ALLOW_THREADS
+        ret = SQLFetch(cur->hstmt);
+        Py_END_ALLOW_THREADS
+
+        if (cur->cnxn->hdbc == SQL_NULL_HANDLE) {
+            // The connection was closed by another thread in the ALLOW_THREADS block above.
+            return RaiseErrorV(0, ProgrammingError, "The cursor's connection was closed.");
+        }
+
+        if (ret == SQL_NO_DATA)
+            break;
+
+        if (!SQL_SUCCEEDED(ret))
+            return RaiseErrorFromHandle(cur->cnxn, "SQLFetch", cur->cnxn->hdbc, cur->hstmt);
+        if (PyErr_Occurred()) {
+            return 0;
+        }
+
+        rows++;
+    }
+
+    return PyLong_FromLong(rows);
+}
+
 
 static char tables_doc[] =
     "C.tables(table=None, catalog=None, schema=None, tableType=None) --> self\n"
@@ -2224,6 +2259,11 @@ static char fetchall_doc[] =
     "A ProgrammingError exception is raised if the previous call to execute() did\n" \
     "not produce any result set or no call was issued yet.";
 
+static char fetchcount_doc[] =
+    "fetchcount() --> count of rows\n" \
+    "\n" \
+    "Count all remaining rows of a query result, the number.";
+
 static char setinputsizes_doc[] =
     "setinputsizes(sizes) -> None\n" \
     "\n" \
@@ -2280,6 +2320,7 @@ static PyMethodDef Cursor_methods[] =
     { "fetchone",         (PyCFunction)Cursor_fetchone,         METH_NOARGS,                fetchone_doc         },
     { "fetchall",         (PyCFunction)Cursor_fetchall,         METH_NOARGS,                fetchall_doc         },
     { "fetchmany",        (PyCFunction)Cursor_fetchmany,        METH_VARARGS,               fetchmany_doc        },
+    { "fetchcount",       (PyCFunction)Cursor_fetchcount,       METH_NOARGS,                fetchcount_doc       },
     { "nextset",          (PyCFunction)Cursor_nextset,          METH_NOARGS,                nextset_doc          },
     { "tables",           (PyCFunction)Cursor_tables,           METH_VARARGS|METH_KEYWORDS, tables_doc           },
     { "columns",          (PyCFunction)Cursor_columns,          METH_VARARGS|METH_KEYWORDS, columns_doc          },

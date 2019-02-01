@@ -75,7 +75,7 @@ def main():
         os.remove('MANIFEST')
 
     kwargs = {
-        'name': "pyodbc",
+        'name': "pyodbc_julek",
         'version': version_str,
         'description': "DB API Module for ODBC",
 
@@ -85,7 +85,7 @@ def main():
         'maintainer':       "Michael Kleehammer",
         'maintainer_email': "michael@kleehammer.com",
 
-        'ext_modules': [Extension('pyodbc', sorted(files), **settings)],
+        'ext_modules': [Extension('pyodbc_julek', sorted(files), **settings)],
 
         'license': 'MIT',
 
@@ -105,7 +105,7 @@ def main():
                        'Topic :: Database',
                        ],
 
-        'url': 'https://github.com/mkleehammer/pyodbc',
+        'url': 'https://github.com/juliuszsompolski/pyodbc',
         'cmdclass': { 'version' : VersionCommand,
                      'tags'    : TagsCommand }
         }

@@ -1200,9 +1200,9 @@ static struct PyModuleDef moduledef = {
 
 PyMODINIT_FUNC
 #if PY_MAJOR_VERSION >= 3
-PyInit_pyodbc()
+PyInit_pyodbc_julek()
 #else
-initpyodbc(void)
+initpyodbc_julek(void)
 #endif
 {
     ErrorInit();
@@ -1215,7 +1215,7 @@ initpyodbc(void)
 #if PY_MAJOR_VERSION >= 3
     module.Attach(PyModule_Create(&moduledef));
 #else
-    module.Attach(Py_InitModule4("pyodbc", pyodbc_methods, module_doc, NULL, PYTHON_API_VERSION));
+    module.Attach(Py_InitModule4("pyodbc_julek", pyodbc_methods, module_doc, NULL, PYTHON_API_VERSION));
 #endif
 
     pModule = module.Get();
